@@ -1,7 +1,5 @@
+use pingee::text_tools::file_handler::get_text_from_file;
 use std::fs;
-
-mod text_tools;
-use text_tools::file_handler::get_text_from_file;
 
 fn main() {
     get_text_from_file("hello.txt");
