@@ -1,7 +1,7 @@
 # Pingee
-A PNG analyzer built in rust.
+A PNG analyzer built in Rust.
 
-This project was created to learn two things
+This project was created to learn two things:
 - Rust
 - How to navigate PNG files.
 

@@ -1,4 +1,11 @@
 pub mod png_tools {
+    pub fn print_sequences(bytes: &[u8], sequence: &[u8], offset: usize) {
+        let sequences = find_sequences(bytes, sequence);
+        for &item in sequences.iter() {
+            let slice = &bytes[item..item + offset];
+            println!("Chunk sequence: {:02X?}", slice)
+        }
+    }
     pub fn find_sequences(bytes: &[u8], sequence: &[u8]) -> Vec<usize> {
         if sequence.len() <= 1 || bytes.len() <= 1 {
             panic!("Sequence and bytes parameters must be at least 2 bytes long")

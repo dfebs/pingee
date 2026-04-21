@@ -1,5 +1,9 @@
-use pingee::png_tools::png_tools::find_sequences;
+use pingee::png_tools::png_tools::*;
 use std::fs;
+
+const IDHR_BYTES: [u8; 4] = [0x49, 0x48, 0x44, 0x52];
+const IEND_BYTES: [u8; 4] = [0x49, 0x45, 0x4e, 0x44];
+const IDAT_BYTES: [u8; 4] = [0x49, 0x44, 0x41, 0x54];
 
 fn main() {
     let bytes: Vec<u8> = match fs::read("gpru.png") {
@@ -7,18 +11,13 @@ fn main() {
         Ok(bytes) => bytes,
     };
 
-    println!("Bytes length: {}", bytes.len());
+    println!("iend");
+    print_sequences(&bytes, &IEND_BYTES, 4);
 
-    let beginning = find_sequences(&bytes, &vec![137, 80, 78, 71, 13, 10, 26, 10]);
-    for item in beginning.iter() {
-        println!("Beginning bytes located at {}", item);
-    }
+    println!("idat");
+    print_sequences(&bytes, &IDAT_BYTES, 4);
 
-    let iend = find_sequences(&bytes, &vec![0x49, 0x45, 0x4e, 0x44]);
-    for &item in iend.iter() {
-        println!("IEND located at {}", item);
-        let slice = &bytes[item..];
-        println!("Last of bits starting at IEND: {:02X?}", slice)
-        // TODO: What are those last 4 bytes?
-    }
+    println!("idhr");
+    // Four core bytes plus the rest of the header info
+    print_sequences(&bytes, &IDHR_BYTES, 17);
 }
