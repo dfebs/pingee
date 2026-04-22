@@ -1,4 +1,8 @@
 pub mod png_tools {
+    pub const IDHR_BYTES: [u8; 4] = [0x49, 0x48, 0x44, 0x52];
+    pub const IEND_BYTES: [u8; 4] = [0x49, 0x45, 0x4e, 0x44];
+    pub const IDAT_BYTES: [u8; 4] = [0x49, 0x44, 0x41, 0x54];
+
     pub fn print_sequences(bytes: &[u8], sequence: &[u8], offset: usize) {
         let sequences = find_sequences(bytes, sequence);
         for &item in sequences.iter() {
@@ -6,6 +10,7 @@ pub mod png_tools {
             println!("Chunk sequence: {:02X?}", slice)
         }
     }
+
     pub fn find_sequences(bytes: &[u8], sequence: &[u8]) -> Vec<usize> {
         if sequence.len() <= 1 || bytes.len() <= 1 {
             panic!("Sequence and bytes parameters must be at least 2 bytes long")
