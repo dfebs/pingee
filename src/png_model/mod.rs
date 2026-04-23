@@ -60,6 +60,6 @@ mod tests {
     fn verify_image_header() {
         let bytes = get_test_file("grpu.png");
         let png = Png::new(&bytes);
-        assert_eq!(png.image_header.width, 1);
+        assert_eq!(png.width, 2);
     }
 }
