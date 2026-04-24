@@ -1,20 +1,19 @@
+pub mod chunks;
 pub mod png_model {
-    use crate::png_tools::png_tools::*;
+    use crate::{png_model::chunks::chunks::Header, png_tools::png_tools::*};
 
     #[derive(Debug)]
     pub struct Png {
         // Found in image header
-        pub width: u32,
-        pub height: u32,
-        pub bit_depth: u8,
-        pub color_type: u8,
-        pub compression_method: u8,
-        pub filter_method: u8,
-        pub interlace_method: u8,
+        pub header: Header,
     }
 
     impl Png {
         pub fn new(bytes: &[u8]) -> Self {
+            let header = Self::retrieve_headers(bytes);
+            Png { header }
+        }
+        fn retrieve_headers(bytes: &[u8]) -> Header {
             let idhr = find_sequences(bytes, &IDHR_BYTES)[0];
 
             // TODO: This is probably good as a function
@@ -35,7 +34,7 @@ pub mod png_model {
             let filter_method = *remaining_bytes.next().unwrap();
             let interlace_method = *remaining_bytes.next().unwrap();
 
-            Png {
+            Header {
                 width,
                 height,
                 bit_depth,
@@ -46,16 +45,6 @@ pub mod png_model {
             }
         }
     }
-
-    // PLTE
-    struct Palette {
-        red: u8,
-        green: u8,
-        blue: u8,
-    }
-
-    // IDAT
-    struct ImageData {}
 }
 
 #[cfg(test)]
@@ -73,6 +62,6 @@ mod tests {
     fn verify_image_header() {
         let bytes = get_test_file("grpu.png");
         let png = Png::new(&bytes);
-        assert_eq!(png.width, 2);
+        assert_eq!(png.header.width, 2);
     }
 }

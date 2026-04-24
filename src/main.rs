@@ -20,8 +20,4 @@ fn main() {
 
     let png = Png::new(&bytes);
     println!("{:#?}", png);
-    println!("--------------------------------------------");
-    let lossy_str = String::from_utf8_lossy(&bytes);
-
-    println!("{}", lossy_str);
 }
