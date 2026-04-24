@@ -1,22 +1,23 @@
 pub mod png_model {
     use crate::png_tools::png_tools::*;
 
+    #[derive(Debug)]
     pub struct Png {
         // Found in image header
         pub width: u32,
         pub height: u32,
-        // pub bit_depth: u8,
-        // pub color_type: u8,
-        // pub compression_method: u8,
-        // pub filter_method: u8,
-        // pub interlace_method: u8,
+        pub bit_depth: u8,
+        pub color_type: u8,
+        pub compression_method: u8,
+        pub filter_method: u8,
+        pub interlace_method: u8,
     }
 
     impl Png {
         pub fn new(bytes: &[u8]) -> Self {
-            print_sequences(bytes, &IDHR_BYTES, 17);
             let idhr = find_sequences(bytes, &IDHR_BYTES)[0];
 
+            // TODO: This is probably good as a function
             let width = &bytes[idhr + 4..idhr + 8];
             let mut width_arr = [0u8; 4];
             width_arr.copy_from_slice(width);
@@ -27,9 +28,21 @@ pub mod png_model {
             height_arr.copy_from_slice(height);
             let height = u32::from_be_bytes(height_arr);
 
+            let mut remaining_bytes = bytes[idhr + 12..idhr + 17].iter();
+            let bit_depth = *remaining_bytes.next().unwrap();
+            let color_type = *remaining_bytes.next().unwrap();
+            let compression_method = *remaining_bytes.next().unwrap();
+            let filter_method = *remaining_bytes.next().unwrap();
+            let interlace_method = *remaining_bytes.next().unwrap();
+
             Png {
-                width: width,
-                height: height,
+                width,
+                height,
+                bit_depth,
+                color_type,
+                compression_method,
+                filter_method,
+                interlace_method,
             }
         }
     }

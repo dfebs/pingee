@@ -16,9 +16,12 @@ fn main() {
 
     println!("idhr");
     // Four core bytes plus the rest of the header info
-    print_sequences(&bytes, &IDHR_BYTES, 17);
+    print_sequences(&bytes, &IDHR_BYTES, 20);
 
     let png = Png::new(&bytes);
-    println!("{}", png.width);
-    println!("{}", png.height);
+    println!("{:#?}", png);
+    println!("--------------------------------------------");
+    let lossy_str = String::from_utf8_lossy(&bytes);
+
+    println!("{}", lossy_str);
 }
