@@ -42,6 +42,13 @@ pub mod png_tools {
 
         sequence_locations
     }
+
+    pub fn extract_u32(bytes: &[u8], start: usize) -> u32 {
+        let width = &bytes[start..start + 4];
+        let mut width_arr = [0u8; 4];
+        width_arr.copy_from_slice(width);
+        u32::from_be_bytes(width_arr)
+    }
 }
 
 #[cfg(test)]

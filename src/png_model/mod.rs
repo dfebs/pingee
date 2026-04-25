@@ -16,16 +16,8 @@ pub mod png_model {
         fn retrieve_headers(bytes: &[u8]) -> Header {
             let idhr = find_sequences(bytes, &IDHR_BYTES)[0];
 
-            // TODO: This is probably good as a function
-            let width = &bytes[idhr + 4..idhr + 8];
-            let mut width_arr = [0u8; 4];
-            width_arr.copy_from_slice(width);
-            let width = u32::from_be_bytes(width_arr);
-
-            let height = &bytes[idhr + 8..idhr + 12];
-            let mut height_arr = [0u8; 4];
-            height_arr.copy_from_slice(height);
-            let height = u32::from_be_bytes(height_arr);
+            let width = extract_u32(bytes, idhr + 4);
+            let height = extract_u32(bytes, idhr + 8);
 
             let mut remaining_bytes = bytes[idhr + 12..idhr + 17].iter();
             let bit_depth = *remaining_bytes.next().unwrap();
