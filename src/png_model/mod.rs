@@ -1,6 +1,6 @@
 pub mod chunks;
 pub mod png_model {
-    use crate::{png_model::chunks::chunks::Header, png_tools::png_tools::*};
+    use crate::{png_model::chunks::chunks::*, png_tools::png_tools::*};
 
     #[derive(Debug)]
     pub struct Png {
@@ -10,16 +10,16 @@ pub mod png_model {
 
     impl Png {
         pub fn new(bytes: &[u8]) -> Self {
-            let header = Self::retrieve_headers(bytes);
+            let raw_chunks = get_chunks(&bytes);
+            let header = Self::retrieve_headers(&raw_chunks.get("IHDR").unwrap().data);
             Png { header }
         }
+
         fn retrieve_headers(bytes: &[u8]) -> Header {
-            let idhr = find_sequences(bytes, &IDHR_BYTES)[0];
+            let width = extract_u32(bytes, 0);
+            let height = extract_u32(bytes, 4);
 
-            let width = extract_u32(bytes, idhr + 4);
-            let height = extract_u32(bytes, idhr + 8);
-
-            let mut remaining_bytes = bytes[idhr + 12..idhr + 17].iter();
+            let mut remaining_bytes = bytes[8..].iter();
             let bit_depth = *remaining_bytes.next().unwrap();
             let color_type = *remaining_bytes.next().unwrap();
             let compression_method = *remaining_bytes.next().unwrap();
@@ -35,6 +35,14 @@ pub mod png_model {
                 filter_method,
                 interlace_method,
             }
+        }
+
+        fn retrieve_image_data() {
+            todo!();
+        }
+
+        fn retrieve_palette() {
+            todo!();
         }
     }
 }

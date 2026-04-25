@@ -46,9 +46,9 @@ pub mod png_tools {
 
     #[derive(Debug)]
     pub struct Chunk {
-        length: usize,
-        data: Vec<u8>, // This may need to be a different data type
-        crc: Vec<u8>,
+        pub length: usize,
+        pub data: Vec<u8>,
+        pub crc: Vec<u8>,
     }
 
     pub fn print_sequences(bytes: &[u8], sequence: &[u8], offset: usize) {
