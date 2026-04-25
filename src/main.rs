@@ -8,16 +8,10 @@ fn main() {
         Ok(bytes) => bytes,
     };
 
-    println!("iend");
-    print_sequences(&bytes, &IEND_BYTES, 4);
+    println!("Length of bytes: {}", &bytes.len());
 
-    println!("idat");
-    print_sequences(&bytes, &IDAT_BYTES, 4);
-
-    println!("idhr");
-    // Four core bytes plus the rest of the header info
-    print_sequences(&bytes, &IDHR_BYTES, 20);
-
+    let chunks = get_chunks(&bytes);
+    println!("{:#?}", chunks);
     let png = Png::new(&bytes);
     println!("{:#?}", png);
 }

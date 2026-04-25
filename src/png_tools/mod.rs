@@ -1,7 +1,55 @@
 pub mod png_tools {
+    use std::{collections::HashMap, fmt::format};
+
+    pub const PNG_SIGNATURE: [u8; 8] = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
     pub const IDHR_BYTES: [u8; 4] = [0x49, 0x48, 0x44, 0x52];
     pub const IEND_BYTES: [u8; 4] = [0x49, 0x45, 0x4e, 0x44];
     pub const IDAT_BYTES: [u8; 4] = [0x49, 0x44, 0x41, 0x54];
+    pub const PLTE_BYTES: [u8; 4] = [0x50, 0x4c, 0x54, 0x45];
+
+    pub fn get_chunks(bytes: &[u8]) -> HashMap<String, Chunk> {
+        let mut current_byte: usize = 8; // First byte after signature
+        let mut chunks = HashMap::new();
+        let mut num_idat_chunks = 0;
+
+        while current_byte < bytes.len() {
+            let length = extract_u32(&bytes, current_byte) as usize;
+            current_byte += 4;
+
+            let chunk_type = match str::from_utf8(&bytes[current_byte..current_byte + 4]).unwrap() {
+                "IDAT" => {
+                    let s = format!("IDAT_{}", num_idat_chunks);
+                    num_idat_chunks += 1;
+                    s
+                }
+                s => s.to_owned(),
+            };
+            current_byte += 4;
+
+            let data = bytes[current_byte..current_byte + length].to_vec();
+            current_byte += length;
+
+            let crc = bytes[current_byte..current_byte + 4].to_vec();
+            current_byte += 4;
+
+            let chunk = Chunk {
+                length: length,
+                data,
+                crc,
+            };
+
+            chunks.insert(chunk_type, chunk);
+        }
+
+        chunks
+    }
+
+    #[derive(Debug)]
+    pub struct Chunk {
+        length: usize,
+        data: Vec<u8>, // This may need to be a different data type
+        crc: Vec<u8>,
+    }
 
     pub fn print_sequences(bytes: &[u8], sequence: &[u8], offset: usize) {
         let sequences = find_sequences(bytes, sequence);
