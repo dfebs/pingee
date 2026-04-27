@@ -1,5 +1,5 @@
 pub mod chunks {
-    // IDHR
+    // IHDR
     #[derive(Debug)]
     pub struct Header {
         pub width: u32,
@@ -10,13 +10,10 @@ pub mod chunks {
         pub filter_method: u8,
         pub interlace_method: u8,
     }
+
     // PLTE
     #[derive(Debug)]
-    struct Palette {
-        red: u8,
-        green: u8,
-        blue: u8,
-    }
+    pub struct Color(pub u8, pub u8, pub u8);
 
     // IDAT
     #[derive(Debug)]

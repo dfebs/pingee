@@ -6,16 +6,20 @@ pub mod png_model {
     pub struct Png {
         // Found in image header
         pub header: Header,
+        pub palette: Option<Vec<Color>>,
     }
 
     impl Png {
         pub fn new(bytes: &[u8]) -> Self {
-            let raw_chunks = get_chunks(&bytes);
-            let header = Self::retrieve_headers(&raw_chunks.get("IHDR").unwrap().data);
-            Png { header }
+            let chunks = get_chunks(&bytes);
+            let header = Self::retrieve_headers(chunks.get("IHDR"));
+            let palette = Self::retrieve_palette(chunks.get("PLTE"));
+
+            Png { header, palette }
         }
 
-        fn retrieve_headers(bytes: &[u8]) -> Header {
+        fn retrieve_headers(chunk: Option<&Chunk>) -> Header {
+            let bytes = &chunk.unwrap().data;
             let width = extract_u32(bytes, 0);
             let height = extract_u32(bytes, 4);
 
@@ -37,11 +41,22 @@ pub mod png_model {
             }
         }
 
-        fn retrieve_image_data() {
-            todo!();
+        fn retrieve_palette(chunk: Option<&Chunk>) -> Option<Vec<Color>> {
+            let palette = &chunk?.data;
+            if palette.len() % 3 != 0 {
+                panic!("Palette is not divisible by 3. It may be corrupted.");
+            }
+            // Figure out how to chunk up the palette into groups of 3
+            // let colors = palette.as_chunks(3);
+            let colors: Vec<Color> = palette
+                .chunks_exact(3)
+                .map(|color| Color(color[0], color[1], color[2]))
+                .collect();
+
+            Some(colors)
         }
 
-        fn retrieve_palette() {
+        fn retrieve_image_data() {
             todo!();
         }
     }
