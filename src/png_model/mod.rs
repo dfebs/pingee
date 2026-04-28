@@ -1,7 +1,9 @@
 pub mod chunks;
 pub mod png_model {
     use crate::{png_model::chunks::chunks::*, png_tools::png_tools::*};
+    use flate2::bufread::ZlibDecoder;
     use std::collections::HashMap;
+    use std::io::Read;
 
     #[derive(Debug)]
     pub struct Png {
@@ -16,7 +18,11 @@ pub mod png_model {
             let chunks = get_chunks(&bytes);
             let header = Self::retrieve_headers(chunks.get("IHDR"));
             let palette = Self::retrieve_palette(chunks.get("PLTE"));
-            let img_data = Self::retrieve_image_data(&chunks);
+            let raw_img_data = Self::retrieve_image_data(&chunks);
+            let mut img_data = Vec::new();
+            ZlibDecoder::new(&raw_img_data[..])
+                .read_to_end(&mut img_data)
+                .expect("Failed to decompress image data");
 
             Png {
                 header,
