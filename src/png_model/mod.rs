@@ -1,5 +1,7 @@
 pub mod chunks;
+pub mod test;
 pub mod png_model {
+    use crate::png_model::test::fixtures;
     use crate::{png_model::chunks::chunks::*, png_tools::png_tools::*};
     use flate2::bufread::ZlibDecoder;
     use std::collections::HashMap;
@@ -10,7 +12,9 @@ pub mod png_model {
         // Found in image header
         pub header: Header,
         pub palette: Option<Vec<Color>>,
-        pub img_data: Vec<u8>,
+        pub decompressed_img_data: Vec<u8>,
+        pub reconstructed_img_data: Vec<u8>,
+        pub raw_img_data: Vec<u8>,
     }
 
     impl Png {
@@ -18,23 +22,29 @@ pub mod png_model {
             let chunks = get_chunks(&bytes);
             let header = Self::retrieve_headers(chunks.get("IHDR"));
             let palette = Self::retrieve_palette(chunks.get("PLTE"));
+
             let raw_img_data = Self::retrieve_image_data(&chunks);
-            let mut img_data = Vec::new();
+            let mut decompressed_img_data = Vec::new();
             ZlibDecoder::new(&raw_img_data[..])
-                .read_to_end(&mut img_data)
+                .read_to_end(&mut decompressed_img_data)
                 .expect("Failed to decompress image data");
+
+            let reconstructed_img_data =
+                Self::reconstruct_image_data(&decompressed_img_data, &header);
 
             Png {
                 header,
                 palette,
-                img_data,
+                raw_img_data,
+                decompressed_img_data,
+                reconstructed_img_data,
             }
         }
 
         fn retrieve_headers(chunk: Option<&Chunk>) -> Header {
             let bytes = &chunk.unwrap().data;
-            let width = extract_u32(bytes, 0);
-            let height = extract_u32(bytes, 4);
+            let width = extract_u32(bytes, 0) as usize;
+            let height = extract_u32(bytes, 4) as usize;
 
             let mut remaining_bytes = bytes[8..].iter();
             let bit_depth = *remaining_bytes.next().unwrap();
@@ -76,15 +86,75 @@ pub mod png_model {
                 .flatten()
                 .collect()
         }
+
+        fn reconstruct_image_data(data: &[u8], header: &Header) -> Vec<u8> {
+            let mut current_filter: u8 = 0;
+            let mut final_colors: Vec<u8> = Vec::new();
+
+            for (index, &byte) in data.iter().enumerate() {
+                if index % (header.scanline_length() + 1) == 0 {
+                    current_filter = byte;
+                } else {
+                    let filtered_byte =
+                        Self::filter_byte(&final_colors, byte, header, current_filter);
+                    final_colors.push(filtered_byte);
+                }
+            }
+
+            final_colors
+        }
+
+        fn filter_byte(buffer: &Vec<u8>, byte: u8, header: &Header, filter: u8) -> u8 {
+            match filter {
+                0 => byte,
+                1 => {
+                    let receiving_byte_location = buffer
+                        .len()
+                        .checked_sub(header.samples_per_pixel() * header.sample_size());
+                    let current_pos = buffer.len() % header.scanline_length();
+
+                    let receiving_byte = match receiving_byte_location {
+                        None => 0,
+                        Some(location) => {
+                            let mut output = 0;
+                            if let Some(_) =
+                                (current_pos).checked_sub(location % header.scanline_length())
+                            {
+                                output = buffer[location];
+                            }
+                            output
+                        }
+                    };
+
+                    byte.wrapping_add(receiving_byte)
+                }
+                2 => {
+                    todo!();
+                    // let receiving_byte_location =
+                    //     buffer.len() - header.samples_per_pixel() * header.sample_size();
+                    // let current_pos = buffer.len() % header.scanline_length();
+                    // let mut receiving_byte: u8 = 0;
+                }
+                3 => {
+                    todo!()
+                }
+                4 => {
+                    todo!()
+                }
+                _ => panic!("Invalid filter provided"),
+            }
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::png_model::test::fixtures;
+
     use super::png_model::*;
     use std::fs;
     fn get_test_file(file_name: &str) -> Vec<u8> {
-        match fs::read("gpru.png") {
+        match fs::read(file_name) {
             Err(why) => panic!("{}", why),
             Ok(bytes) => bytes,
         }
@@ -92,8 +162,18 @@ mod tests {
 
     #[test]
     fn verify_image_header() {
-        let bytes = get_test_file("grpu.png");
+        let bytes = get_test_file("gpru.png");
         let png = Png::new(&bytes);
         assert_eq!(png.header.width, 2);
+    }
+
+    #[test]
+    fn verify_filter_1() {
+        let bytes = get_test_file("filter_1_only.png");
+        let png = Png::new(&bytes);
+        assert_eq!(
+            png.reconstructed_img_data,
+            fixtures::fixtures::FILTER_1_ONLY
+        );
     }
 }
