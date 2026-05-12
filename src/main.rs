@@ -1,5 +1,4 @@
 use pingee::png_model::png_model::*;
-use pingee::png_tools::png_tools::*;
 use std::fs;
 
 // Sample minifb code

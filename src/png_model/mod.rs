@@ -1,7 +1,6 @@
 pub mod chunks;
 pub mod test;
 pub mod png_model {
-    use crate::png_model::test::fixtures;
     use crate::{png_model::chunks::chunks::*, png_tools::png_tools::*};
     use flate2::bufread::ZlibDecoder;
     use std::collections::HashMap;
