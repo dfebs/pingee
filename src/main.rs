@@ -5,7 +5,7 @@ use std::fs;
 use minifb::{Key, Window, WindowOptions};
 
 fn main() {
-    let bytes: Vec<u8> = match fs::read("filter_1_only.png") {
+    let bytes: Vec<u8> = match fs::read("filter_2_only.png") {
         Err(why) => panic!("{}", why),
         Ok(bytes) => bytes,
     };

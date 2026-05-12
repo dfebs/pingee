@@ -128,11 +128,15 @@ pub mod png_model {
                     byte.wrapping_add(receiving_byte)
                 }
                 2 => {
-                    todo!();
-                    // let receiving_byte_location =
-                    //     buffer.len() - header.samples_per_pixel() * header.sample_size();
-                    // let current_pos = buffer.len() % header.scanline_length();
-                    // let mut receiving_byte: u8 = 0;
+                    let receiving_byte_location =
+                        buffer.len().checked_sub(header.scanline_length());
+
+                    let receiving_byte = match receiving_byte_location {
+                        None => 0,
+                        Some(byte_location) => buffer[byte_location],
+                    };
+
+                    byte.wrapping_add(receiving_byte)
                 }
                 3 => {
                     todo!()
@@ -173,6 +177,16 @@ mod tests {
         assert_eq!(
             png.reconstructed_img_data,
             fixtures::fixtures::FILTER_1_ONLY
+        );
+    }
+
+    #[test]
+    fn verify_filter_2() {
+        let bytes = get_test_file("filter_2_only.png");
+        let png = Png::new(&bytes);
+        assert_eq!(
+            png.reconstructed_img_data,
+            fixtures::fixtures::FILTER_2_ONLY
         );
     }
 }
