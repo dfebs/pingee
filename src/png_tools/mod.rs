@@ -1,5 +1,12 @@
 pub mod png_tools {
-    use std::{collections::HashMap, fmt::format};
+    use std::collections::HashMap;
+
+    #[derive(Debug)]
+    pub struct Chunk {
+        pub length: usize,
+        pub data: Vec<u8>,
+        pub crc: Vec<u8>,
+    }
 
     pub fn get_chunks(bytes: &[u8]) -> HashMap<String, Chunk> {
         let mut current_byte: usize = 8; // First byte after signature
@@ -36,13 +43,6 @@ pub mod png_tools {
         }
 
         chunks
-    }
-
-    #[derive(Debug)]
-    pub struct Chunk {
-        pub length: usize,
-        pub data: Vec<u8>,
-        pub crc: Vec<u8>,
     }
 
     pub fn extract_u32(bytes: &[u8], start: usize) -> u32 {

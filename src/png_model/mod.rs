@@ -103,46 +103,93 @@ pub mod png_model {
             final_colors
         }
 
-        fn filter_byte(buffer: &Vec<u8>, byte: u8, header: &Header, filter: u8) -> u8 {
+        fn get_a(buffer: &[u8], header: &Header) -> u8 {
+            let receiving_byte_location = buffer
+                .len()
+                .checked_sub(header.samples_per_pixel() * header.sample_size());
+            let current_pos = buffer.len() % header.scanline_length();
+
+            match receiving_byte_location {
+                None => 0,
+                Some(location) => {
+                    let mut output = 0;
+                    if let Some(_) = (current_pos).checked_sub(location % header.scanline_length())
+                    {
+                        output = buffer[location];
+                    }
+                    output
+                }
+            }
+        }
+
+        fn get_b(buffer: &[u8], header: &Header) -> u8 {
+            let receiving_byte_location = buffer.len().checked_sub(header.scanline_length());
+
+            match receiving_byte_location {
+                None => 0,
+                Some(byte_location) => buffer[byte_location],
+            }
+        }
+
+        fn get_c(buffer: &[u8], header: &Header) -> u8 {
+            let receiving_byte_location = buffer.len().checked_sub(header.scanline_length());
+
+            if receiving_byte_location == None {
+                return 0;
+            }
+
+            let slice = &buffer[0..receiving_byte_location.unwrap()];
+            let final_byte = Self::get_a(slice, header);
+            final_byte
+        }
+
+        fn filter_byte(buffer: &[u8], byte: u8, header: &Header, filter: u8) -> u8 {
             match filter {
+                // No Filter
                 0 => byte,
+
+                // Sub
                 1 => {
-                    let receiving_byte_location = buffer
-                        .len()
-                        .checked_sub(header.samples_per_pixel() * header.sample_size());
-                    let current_pos = buffer.len() % header.scanline_length();
-
-                    let receiving_byte = match receiving_byte_location {
-                        None => 0,
-                        Some(location) => {
-                            let mut output = 0;
-                            if let Some(_) =
-                                (current_pos).checked_sub(location % header.scanline_length())
-                            {
-                                output = buffer[location];
-                            }
-                            output
-                        }
-                    };
-
+                    let receiving_byte = Self::get_a(buffer, header);
                     byte.wrapping_add(receiving_byte)
                 }
+
+                // Up
                 2 => {
-                    let receiving_byte_location =
-                        buffer.len().checked_sub(header.scanline_length());
-
-                    let receiving_byte = match receiving_byte_location {
-                        None => 0,
-                        Some(byte_location) => buffer[byte_location],
-                    };
-
+                    let receiving_byte = Self::get_b(buffer, header);
                     byte.wrapping_add(receiving_byte)
                 }
+
+                // Average
                 3 => {
-                    todo!()
+                    let a = Self::get_a(buffer, header) as u16;
+                    let b = Self::get_b(buffer, header) as u16;
+                    let avg = (a + b) / 2;
+
+                    byte.wrapping_add(avg as u8)
                 }
+
+                // Paeth
                 4 => {
-                    todo!()
+                    let a = Self::get_a(buffer, header) as i16;
+                    let b = Self::get_b(buffer, header) as i16;
+                    let c = Self::get_c(buffer, header) as i16;
+
+                    let p = a + b - c;
+                    let pa = (p - a).abs();
+                    let pb = (p - b).abs();
+                    let pc = (p - c).abs();
+
+                    let result;
+                    if pa <= pb && pa <= pc {
+                        result = a as u8;
+                    } else if pb <= pc {
+                        result = b as u8;
+                    } else {
+                        result = c as u8;
+                    }
+
+                    byte.wrapping_add(result)
                 }
                 _ => panic!("Invalid filter provided"),
             }
@@ -188,5 +235,15 @@ mod tests {
             png.reconstructed_img_data,
             fixtures::fixtures::FILTER_2_ONLY
         );
+    }
+
+    #[test]
+    fn verify_filter_3() {
+        todo!();
+    }
+
+    #[test]
+    fn verify_filter_4() {
+        todo!();
     }
 }

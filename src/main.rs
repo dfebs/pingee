@@ -1,17 +1,20 @@
 use pingee::png_model::png_model::*;
+use std::env;
 use std::fs;
 
 // Sample minifb code
 use minifb::{Key, Window, WindowOptions};
 
 fn main() {
-    let bytes: Vec<u8> = match fs::read("filter_2_only.png") {
+    let file_name: Vec<String> = env::args().collect();
+    let bytes: Vec<u8> = match fs::read(&file_name[1]) {
         Err(why) => panic!("{}", why),
         Ok(bytes) => bytes,
     };
 
     let png = Png::new(&bytes);
-    println!("{:#?}", png.reconstructed_img_data);
+    println!("decompressed data: {:#?}", png.decompressed_img_data);
+    println!("reconstructed data: {:#?}", png.reconstructed_img_data);
 
     let image_width: usize = png.header.width;
     let image_height: usize = png.header.height;
