@@ -14,6 +14,7 @@ pub mod png_model {
         pub decompressed_img_data: Vec<u8>,
         pub reconstructed_img_data: Vec<u8>,
         pub raw_img_data: Vec<u8>,
+        pub chunks: HashMap<String, Chunk>,
     }
 
     impl Png {
@@ -37,6 +38,7 @@ pub mod png_model {
                 raw_img_data,
                 decompressed_img_data,
                 reconstructed_img_data,
+                chunks,
             }
         }
 
@@ -223,7 +225,7 @@ mod tests {
         let png = Png::new(&bytes);
         assert_eq!(
             png.reconstructed_img_data,
-            fixtures::fixtures::FILTER_1_ONLY
+            fixtures::fixtures::FILTERED_IMAGE
         );
     }
 
@@ -233,17 +235,27 @@ mod tests {
         let png = Png::new(&bytes);
         assert_eq!(
             png.reconstructed_img_data,
-            fixtures::fixtures::FILTER_2_ONLY
+            fixtures::fixtures::FILTERED_IMAGE
         );
     }
 
     #[test]
     fn verify_filter_3() {
-        todo!();
+        let bytes = get_test_file("filter_3_only.png");
+        let png = Png::new(&bytes);
+        assert_eq!(
+            png.reconstructed_img_data,
+            fixtures::fixtures::FILTERED_IMAGE
+        );
     }
 
     #[test]
     fn verify_filter_4() {
-        todo!();
+        let bytes = get_test_file("filter_4_only.png");
+        let png = Png::new(&bytes);
+        assert_eq!(
+            png.reconstructed_img_data,
+            fixtures::fixtures::FILTERED_IMAGE
+        );
     }
 }
