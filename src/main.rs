@@ -13,27 +13,25 @@ fn main() {
     };
 
     let png = Png::new(&bytes);
-    println!("decompressed data: {:#?}", png.decompressed_img_data);
-    println!("reconstructed data: {:#?}", png.reconstructed_img_data);
 
     let image_width: usize = png.header.width;
     let image_height: usize = png.header.height;
 
-    let window_width: usize = if image_width <= 10 {
-        image_width * 100
+    let window_width: usize = if image_width <= 50 {
+        image_width * 50
     } else {
-        image_width * 10
+        image_width
     };
-    let window_height: usize = if image_height <= 10 {
-        image_height * 100
+    let window_height: usize = if image_height <= 50 {
+        image_height * 50
     } else {
-        image_height * 10
+        image_height
     };
 
     // this may not work with indexed yet
     let buffer: Vec<u32> = png
         .reconstructed_img_data
-        .chunks(3)
+        .chunks_exact(3)
         .map(|color| (color[0] as u32) << 16 | (color[1] as u32) << 8 | color[2] as u32)
         .collect();
 
