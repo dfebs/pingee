@@ -97,7 +97,7 @@ pub mod png_model {
                     current_filter = byte;
                 } else {
                     let filtered_byte =
-                        Self::filter_byte(&final_colors, byte, header, current_filter);
+                        Self::reconstruct_byte(&final_colors, byte, header, current_filter);
                     final_colors.push(filtered_byte);
                 }
             }
@@ -143,7 +143,7 @@ pub mod png_model {
             final_byte
         }
 
-        fn filter_byte(buffer: &[u8], byte: u8, header: &Header, filter: u8) -> u8 {
+        fn reconstruct_byte(buffer: &[u8], byte: u8, header: &Header, filter: u8) -> u8 {
             match filter {
                 // No Filter
                 0 => byte,
