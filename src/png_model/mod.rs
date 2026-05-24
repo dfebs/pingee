@@ -106,9 +106,7 @@ pub mod png_model {
         }
 
         fn get_a(buffer: &[u8], header: &Header) -> u8 {
-            let receiving_byte_location = buffer
-                .len()
-                .checked_sub(header.samples_per_pixel() * header.sample_size());
+            let receiving_byte_location = buffer.len().checked_sub(header.pixel_size());
             let current_pos = buffer.len() % header.scanline_length();
 
             match receiving_byte_location {
@@ -256,6 +254,16 @@ mod tests {
         assert_eq!(
             png.reconstructed_img_data,
             fixtures::fixtures::FILTERED_IMAGE
+        );
+    }
+
+    #[test]
+    fn verify_filter_mixed() {
+        let bytes = get_test_file("filter_mixed.png");
+        let png = Png::new(&bytes);
+        assert_eq!(
+            png.reconstructed_img_data,
+            fixtures::fixtures::FILTERED_IMAGE_MIXED
         );
     }
 }

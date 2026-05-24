@@ -31,16 +31,16 @@ pub mod chunks {
             }
         }
 
+        pub fn pixel_size(&self) -> usize {
+            self.sample_size() * self.samples_per_pixel()
+        }
+
         pub fn scanline_length(&self) -> usize {
-            self.sample_size() * self.samples_per_pixel() * self.width
+            self.pixel_size() * self.width
         }
     }
 
     // PLTE
     #[derive(Debug)]
     pub struct Color(pub u8, pub u8, pub u8);
-
-    // IDAT
-    #[derive(Debug)]
-    struct ImageData {}
 }
