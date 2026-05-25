@@ -80,10 +80,20 @@ pub mod png_model {
         }
 
         fn retrieve_image_data(chunks: &HashMap<String, Chunk>) -> Vec<u8> {
-            chunks
-                .iter()
-                .filter(|(key, _)| key.contains("IDAT"))
-                .map(|(_, value)| value.data.to_owned())
+            let mut keys: Vec<&String> = chunks.keys().filter(|key| key.contains("IDAT")).collect();
+
+            keys.sort_by(|a, b| {
+                let a_value: String = a.chars().filter(|c| c.is_ascii_digit()).collect();
+                let b_value: String = b.chars().filter(|c| c.is_ascii_digit()).collect();
+
+                let a_integer: i32 = str::parse(&a_value).unwrap();
+                let b_integer: i32 = str::parse(&b_value).unwrap();
+
+                a_integer.cmp(&b_integer)
+            });
+
+            keys.iter()
+                .map(|key| chunks.get(*key).unwrap().data.clone())
                 .flatten()
                 .collect()
         }
@@ -260,6 +270,16 @@ mod tests {
     #[test]
     fn verify_filter_mixed() {
         let bytes = get_test_file("filter_mixed.png");
+        let png = Png::new(&bytes);
+        assert_eq!(
+            png.reconstructed_img_data,
+            fixtures::fixtures::FILTERED_IMAGE_MIXED
+        );
+    }
+
+    #[test]
+    fn verify_filter_mixed_multiple_idat() {
+        let bytes = get_test_file("filter_mixed_multiple_idat.png");
         let png = Png::new(&bytes);
         assert_eq!(
             png.reconstructed_img_data,
