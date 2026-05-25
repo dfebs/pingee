@@ -28,9 +28,23 @@ fn main() {
         image_height
     };
 
+    let data;
+    // minifb Transparency doesn't work on OSX so we exclude transparent bytes
+    if png.header.color_type == 6 {
+        data = png
+            .reconstructed_img_data
+            .clone()
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| (i + 1) % 4 != 0)
+            .map(|(_, v)| *v)
+            .collect();
+    } else {
+        data = png.reconstructed_img_data.clone();
+    }
+
     // this may not work with indexed yet
-    let buffer: Vec<u32> = png
-        .reconstructed_img_data
+    let buffer: Vec<u32> = data
         .chunks_exact(3)
         .map(|color| (color[0] as u32) << 16 | (color[1] as u32) << 8 | color[2] as u32)
         .collect();
