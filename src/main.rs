@@ -6,8 +6,8 @@ use std::fs;
 use minifb::{Key, Window, WindowOptions};
 
 fn main() {
-    let file_name: Vec<String> = env::args().collect();
-    let bytes: Vec<u8> = match fs::read(&file_name[1]) {
+    let args: Vec<String> = env::args().collect();
+    let bytes: Vec<u8> = match fs::read(&args[1]) {
         Err(why) => panic!("{}", why),
         Ok(bytes) => bytes,
     };
