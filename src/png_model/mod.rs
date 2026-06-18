@@ -42,6 +42,24 @@ pub mod png_model {
             }
         }
 
+        pub fn get_final_img_data(&self) -> Vec<u8> {
+            // If image is not indexed
+            if self.header.color_type != 3 {
+                return self.reconstructed_img_data.clone();
+            }
+
+            let mut output_buffer: Vec<u8> = Vec::new();
+            let palette = self.palette.clone().unwrap();
+            for pixel in self.reconstructed_img_data.clone() {
+                let palette_entry = palette[pixel as usize];
+                output_buffer.push(palette_entry.0);
+                output_buffer.push(palette_entry.1);
+                output_buffer.push(palette_entry.2);
+            }
+
+            output_buffer
+        }
+
         fn retrieve_headers(chunk: Option<&Chunk>) -> Header {
             let bytes = &chunk.unwrap().data;
             let width = extract_u32(bytes, 0) as usize;
@@ -221,6 +239,13 @@ mod tests {
     }
 
     #[test]
+    fn verify_indexed_image() {
+        let bytes = get_test_file("gpru.png");
+        let png = Png::new(&bytes);
+        assert_eq!(png.get_final_img_data(), fixtures::fixtures::INDEXED_IMAGE);
+    }
+
+    #[test]
     fn verify_image_header() {
         let bytes = get_test_file("gpru.png");
         let png = Png::new(&bytes);
@@ -231,40 +256,28 @@ mod tests {
     fn verify_filter_1() {
         let bytes = get_test_file("filter_1_only.png");
         let png = Png::new(&bytes);
-        assert_eq!(
-            png.reconstructed_img_data,
-            fixtures::fixtures::FILTERED_IMAGE
-        );
+        assert_eq!(png.get_final_img_data(), fixtures::fixtures::FILTERED_IMAGE);
     }
 
     #[test]
     fn verify_filter_2() {
         let bytes = get_test_file("filter_2_only.png");
         let png = Png::new(&bytes);
-        assert_eq!(
-            png.reconstructed_img_data,
-            fixtures::fixtures::FILTERED_IMAGE
-        );
+        assert_eq!(png.get_final_img_data(), fixtures::fixtures::FILTERED_IMAGE);
     }
 
     #[test]
     fn verify_filter_3() {
         let bytes = get_test_file("filter_3_only.png");
         let png = Png::new(&bytes);
-        assert_eq!(
-            png.reconstructed_img_data,
-            fixtures::fixtures::FILTERED_IMAGE
-        );
+        assert_eq!(png.get_final_img_data(), fixtures::fixtures::FILTERED_IMAGE);
     }
 
     #[test]
     fn verify_filter_4() {
         let bytes = get_test_file("filter_4_only.png");
         let png = Png::new(&bytes);
-        assert_eq!(
-            png.reconstructed_img_data,
-            fixtures::fixtures::FILTERED_IMAGE
-        );
+        assert_eq!(png.get_final_img_data(), fixtures::fixtures::FILTERED_IMAGE);
     }
 
     #[test]
@@ -272,7 +285,7 @@ mod tests {
         let bytes = get_test_file("filter_mixed.png");
         let png = Png::new(&bytes);
         assert_eq!(
-            png.reconstructed_img_data,
+            png.get_final_img_data(),
             fixtures::fixtures::FILTERED_IMAGE_MIXED
         );
     }
@@ -282,7 +295,7 @@ mod tests {
         let bytes = get_test_file("filter_mixed_multiple_idat.png");
         let png = Png::new(&bytes);
         assert_eq!(
-            png.reconstructed_img_data,
+            png.get_final_img_data(),
             fixtures::fixtures::FILTERED_IMAGE_MIXED
         );
     }

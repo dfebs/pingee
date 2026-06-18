@@ -32,15 +32,14 @@ fn main() {
     // minifb Transparency doesn't work on OSX so we exclude transparent bytes
     if png.header.color_type == 6 {
         data = png
-            .reconstructed_img_data
-            .clone()
+            .get_final_img_data()
             .iter()
             .enumerate()
             .filter(|(i, _)| (i + 1) % 4 != 0)
             .map(|(_, v)| *v)
             .collect();
     } else {
-        data = png.reconstructed_img_data.clone();
+        data = png.get_final_img_data();
     }
 
     // this may not work with indexed yet

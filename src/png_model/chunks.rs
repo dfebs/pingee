@@ -40,7 +40,7 @@ pub mod chunks {
         }
     }
 
-    // PLTE
-    #[derive(Debug)]
+    // PLTE Color
+    #[derive(Debug, Clone, Copy)]
     pub struct Color(pub u8, pub u8, pub u8);
 }
