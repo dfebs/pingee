@@ -1,4 +1,5 @@
 # Pingee
+![Pingee Logo](pingee_logo.png)
 A PNG analyzer built in Rust.
 
 This project was created to learn two things:
