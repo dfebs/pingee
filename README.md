@@ -1,13 +1,14 @@
 # Pingee
 ![Pingee Logo](pingee_logo.png)
-A tool to display PNGs built in Rust.
 
 ## About Pingee
+Pingee is a tool to display PNGs.
+
 This project was created to learn two things:
 - Rust
 - How to navigate and display PNG files.
 
-This is not meant to be an exhaustive, perfect PNG library by any stretch. It is simply a tool I made to learn the ins and outs of PNGs. Feel free to pull it down and learn stuff!
+This is not meant to be an exhaustive, perfect PNG library by any stretch. It is simply a tool I made to learn the ins and outs of PNGs.
 
 The process of decompressing the image data and displaying it were done using libraries, but everything else was done by hand. 
 
